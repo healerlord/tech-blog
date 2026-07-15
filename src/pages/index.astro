@@ -1,10 +1,25 @@
 ---
+import FeaturedPost from "../components/FeaturedPost.astro";
+import HeroIntro from "../components/HeroIntro.astro";
+import PostList from "../components/PostList.astro";
+import ProjectList from "../components/ProjectList.astro";
+import WritingStatus from "../components/WritingStatus.astro";
+import { projects } from "../data/projects";
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { getHomepagePosts } from "../lib/content";
+
+const { featured, recent } = await getHomepagePosts();
 ---
 
-<BaseLayout title="KYRIE.DEV" description="Java、AI 工程与系统设计实践。">
-  <section class="container page-shell">
-    <p class="page-kicker">Software engineer · Shanghai</p>
-    <h1 class="page-title">KYRIE.DEV</h1>
-  </section>
+<BaseLayout
+  title="KYRIE.DEV · Java、AI 工程与系统设计"
+  description="记录 Java、AI 工程与系统设计，把复杂系统讲清楚。"
+>
+  <HeroIntro />
+  <WritingStatus topic="Agent orchestration / latency / observability" issue="Issue 024" />
+  <FeaturedPost post={featured} />
+  <div class="container">
+    <PostList posts={recent} showAllLink />
+  </div>
+  <ProjectList projects={projects} />
 </BaseLayout>

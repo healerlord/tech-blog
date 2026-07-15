@@ -1,0 +1,60 @@
+---
+interface Props {
+  topic: string;
+  issue: string;
+}
+
+const { topic, issue } = Astro.props;
+---
+
+<div class="container writing-status mono" data-writing-status>
+  <strong>Now writing</strong>
+  <span>{topic}</span>
+  <span>{issue}</span>
+</div>
+
+<style>
+  .writing-status {
+    display: grid;
+    grid-template-columns: 150px 1fr 110px;
+    align-items: center;
+    min-height: 38px;
+    border-top: 1px solid var(--ink);
+    border-bottom: 1px solid var(--ink);
+    font-size: 0.62rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  strong {
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--signal);
+    color: #12130f;
+    border-right: 1px solid var(--ink);
+  }
+
+  span:nth-child(2) {
+    min-width: 0;
+    padding-inline: 18px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  span:last-child {
+    text-align: right;
+  }
+
+  @media (max-width: 620px) {
+    .writing-status {
+      grid-template-columns: 116px 1fr;
+    }
+
+    span:last-child {
+      display: none;
+    }
+  }
+</style>

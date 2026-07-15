@@ -1,0 +1,198 @@
+---
+import { ArrowRight } from "@lucide/astro";
+
+import type { BlogPost } from "../lib/content";
+
+interface Props {
+  post: BlogPost;
+}
+
+const { post } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const articleUrl = `${base}articles/${post.id}/`;
+---
+
+<section class="container featured-post">
+  <div class="featured-copy">
+    <p class="featured-meta mono">Featured story · {post.readingMinutes} min</p>
+    <h2><a href={articleUrl}>{post.data.title}</a></h2>
+    <p>{post.data.description}</p>
+    <a class="text-link" href={articleUrl}>
+      阅读全文 <ArrowRight size={16} stroke-width={2} aria-hidden="true" />
+    </a>
+  </div>
+
+  <div class="system-visual" data-technical-visual role="img" aria-label={post.data.visualAlt}>
+    <div class="visual-top mono"><span>Runtime trace / 142</span><span>14:22:08.031</span></div>
+    <div>
+      <div class="request-flow">
+        <div class="flow-node"><span>01 / Request</span><small>HTTP + Context</small></div>
+        <div class="flow-node active"><span>02 / Router</span><small>Policy match</small></div>
+        <div class="flow-node model"><span>03 / Tool loop</span><small>3 iterations</small></div>
+        <div class="flow-node memory"><span>04 / Memory</span><small>State commit</small></div>
+      </div>
+      <div class="latency-row mono"><span>router</span><i><b style="width: 18%"></b></i><strong>18</strong></div>
+      <div class="latency-row mono model-row"><span>model</span><i><b style="width: 42%"></b></i><strong>42</strong></div>
+      <div class="latency-row mono tool-row"><span>tools</span><i><b style="width: 76%"></b></i><strong>76</strong></div>
+    </div>
+    <div class="visual-bottom mono"><span>Total latency 2.84s</span><span>Trace complete</span></div>
+  </div>
+</section>
+
+<style>
+  .featured-post {
+    display: grid;
+    grid-template-columns: minmax(0, 0.78fr) minmax(400px, 1.22fr);
+    gap: 48px;
+    padding-block: 56px 68px;
+  }
+
+  .featured-meta {
+    margin: 0;
+    color: var(--muted-ink);
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  h2 {
+    max-width: 520px;
+    margin: 17px 0 18px;
+    font-size: 2.45rem;
+    line-height: 1.08;
+    letter-spacing: 0;
+  }
+
+  h2 a:hover {
+    color: var(--blue);
+  }
+
+  .featured-copy > p:nth-child(3) {
+    max-width: 520px;
+    margin: 0 0 26px;
+    color: var(--muted-ink);
+    font-size: 0.9rem;
+    line-height: 1.75;
+  }
+
+  .text-link {
+    font-size: 0.8rem;
+  }
+
+  .system-visual {
+    min-height: 318px;
+    padding: 24px;
+    background: #10130f;
+    color: #f3f3ee;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .visual-top,
+  .visual-bottom {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    font-size: 0.58rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .visual-top span:first-child {
+    color: #dfff00;
+  }
+
+  .request-flow {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 13px;
+    margin-bottom: 24px;
+  }
+
+  .flow-node {
+    min-width: 0;
+    min-height: 76px;
+    padding: 12px 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border: 1px solid #73786f;
+    font: 700 0.55rem/1.2 var(--font-mono);
+    text-transform: uppercase;
+  }
+
+  .flow-node small {
+    color: #9ca098;
+    font-size: 0.48rem;
+  }
+
+  .flow-node.active {
+    border-color: #dfff00;
+    background: #1c2118;
+  }
+
+  .flow-node.model {
+    border-color: #7891ff;
+  }
+
+  .flow-node.memory {
+    border-color: #ff806b;
+  }
+
+  .latency-row {
+    display: grid;
+    grid-template-columns: 56px 1fr 28px;
+    gap: 10px;
+    align-items: center;
+    margin-top: 10px;
+    font-size: 0.5rem;
+  }
+
+  .latency-row i {
+    height: 4px;
+    background: #343a32;
+  }
+
+  .latency-row b {
+    display: block;
+    height: 100%;
+    background: #dfff00;
+  }
+
+  .model-row b {
+    background: #7891ff;
+  }
+
+  .tool-row b {
+    background: #ff806b;
+  }
+
+  @media (max-width: 900px) {
+    .featured-post {
+      grid-template-columns: 1fr;
+      gap: 34px;
+      padding-block: 46px 56px;
+    }
+
+    h2 {
+      font-size: 2.05rem;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .system-visual {
+      min-height: 306px;
+      padding: 17px;
+    }
+
+    .request-flow {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .visual-top span:last-child,
+    .visual-bottom span:last-child {
+      display: none;
+    }
+  }
+</style>
