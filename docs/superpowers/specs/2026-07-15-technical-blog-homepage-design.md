@@ -30,6 +30,13 @@ The global navigation contains:
 - Search: local full-text search over published content.
 - Theme: system-aware light and dark appearance toggle.
 
+The topic index stays intentionally compact as the archive grows. Each topic
+shows its four newest articles and total article count, then links to a stable
+archive at `/topics/<slug>/`. Topic archives show twenty articles per page;
+later pages use `/topics/<slug>/2/`, `/topics/<slug>/3/`, and so on. Topic
+names, slugs, and descriptions come from a central catalog so URLs do not
+change when display copy is edited.
+
 The homepage uses this order:
 
 1. Header and global navigation.
@@ -146,6 +153,7 @@ The system preference is the default until the reader explicitly chooses a theme
 - Brand plus menu, search, and theme icon controls remain in the header.
 - Display heading drops to a fixed mobile size.
 - Article rows retain sequence number and title; secondary metadata is hidden.
+- Long topic and article titles wrap within the content column instead of creating horizontal scrolling.
 - Project technology summaries collapse before project names.
 - Footer stacks vertically.
 - No section introduces horizontal scrolling or overlapping text.
@@ -158,6 +166,7 @@ The system preference is the default until the reader explicitly chooses a theme
 - `FeaturedPost`: featured post metadata, excerpt, link, and required technical visual.
 - `TechnicalVisual`: bounded architecture, code, trace, or benchmark preview with accessible text.
 - `PostList`: deterministic recent-post ordering and compact responsive rows.
+- `Pagination`: previous/next navigation for topic archives with stable page URLs.
 - `ProjectList`: selected project data and external links.
 - `SiteFooter`: copyright, RSS, and build note.
 - `SearchDialog`: keyboard-accessible local search with empty and no-result states.
@@ -171,8 +180,9 @@ The recommended implementation is a statically generated Astro site:
 1. Posts and pages are authored in Markdown or MDX.
 2. A content schema validates title, description, publication date, tags, featured state, and required featured visual metadata. Reading time is calculated from the article body during the build.
 3. The homepage query selects one featured post, four recent posts, and three selected projects.
-4. Build output is entirely static.
-5. GitHub Actions builds the site and publishes it to GitHub Pages initially.
+4. The topic query groups posts through the central topic catalog, limits overview previews to four, and paginates archives after twenty posts.
+5. Build output is entirely static.
+6. GitHub Actions builds the site and publishes it to GitHub Pages initially.
 
 Local search is generated from the final static output. RSS, sitemap, canonical URLs, Open Graph metadata, and syntax highlighting are produced during the build. No runtime database or application server is required.
 
@@ -203,6 +213,7 @@ Local search is generated from the final static output. RSS, sitemap, canonical 
 - The homepage contains no decorative cards, generic hero imagery, or nonfunctional controls.
 - Featured content has a meaningful technical visual with stable dimensions.
 - All sections reflow without overlap, clipping, or horizontal overflow from 320 px upward.
+- Topic overview sections stay bounded at four previews, and every published topic archive has stable paginated routes.
 - Search, theme selection, RSS, canonical metadata, sitemap, and article links work in the static build.
 - Missing or invalid required content produces a clear build error.
 - The static production build can be deployed by GitHub Actions to GitHub Pages without a server runtime.

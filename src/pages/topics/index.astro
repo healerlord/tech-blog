@@ -1,20 +1,14 @@
 ---
+import { ArrowRight } from "@lucide/astro";
+
+import { topicDefinitions } from "../../data/topics";
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import { getPublishedPosts, type BlogPost } from "../../lib/content";
+import { getPublishedPosts } from "../../lib/content";
+import { buildTopicGroups } from "../../lib/topics";
 import { joinBase } from "../../lib/urls";
 
 const posts = await getPublishedPosts();
-const topicMap = new Map<string, BlogPost[]>();
-
-for (const post of posts) {
-  for (const tag of post.data.tags) {
-    topicMap.set(tag, [...(topicMap.get(tag) ?? []), post]);
-  }
-}
-
-const topics = [...topicMap.entries()].sort((left, right) =>
-  left[0].localeCompare(right[0], "zh-CN"),
-);
+const topics = buildTopicGroups(posts, topicDefinitions);
 const base = import.meta.env.BASE_URL;
 ---
 
@@ -25,20 +19,35 @@ const base = import.meta.env.BASE_URL;
     <p class="page-lede">主题不是标签堆积，而是同一类工程问题在不同上下文里的连续观察。</p>
 
     <div class="topic-list">
-      {topics.map(([topic, topicPosts], index) => (
-        <section id={topic.toLocaleLowerCase("en-US").replaceAll(" ", "-")} class="topic-row">
-          <div class="topic-name">
-            <span class="mono">{String(index + 1).padStart(2, "0")}</span>
-            <h2>{topic}</h2>
-            <small class="mono">{topicPosts.length} POSTS</small>
-          </div>
-          <div class="topic-posts">
-            {topicPosts.map((post) => (
-              <a href={joinBase(base, `articles/${post.id}/`)}>{post.data.title}</a>
-            ))}
-          </div>
-        </section>
-      ))}
+      {topics.map((topic, index) => {
+        const topicUrl = joinBase(base, `topics/${topic.slug}/`);
+        const previewPosts = topic.posts.slice(0, 4);
+
+        return (
+          <section class="topic-row">
+            <div class="topic-name">
+              <span class="mono">{String(index + 1).padStart(2, "0")}</span>
+              <div>
+                <h2><a href={topicUrl}>{topic.name}</a></h2>
+                <p>{topic.description}</p>
+              </div>
+              <small class="mono">{topic.posts.length} POSTS</small>
+            </div>
+
+            <div class="topic-preview">
+              <div class="topic-posts">
+                {previewPosts.map((post) => (
+                  <a href={joinBase(base, `articles/${post.id}/`)}>{post.data.title}</a>
+                ))}
+              </div>
+              <a class="view-topic mono" href={topicUrl}>
+                查看全部 {topic.posts.length} 篇
+                <ArrowRight size={15} stroke-width={2} aria-hidden="true" />
+              </a>
+            </div>
+          </section>
+        );
+      })}
     </div>
   </section>
 </BaseLayout>
@@ -51,9 +60,9 @@ const base = import.meta.env.BASE_URL;
 
   .topic-row {
     display: grid;
-    grid-template-columns: 0.72fr 1.28fr;
-    gap: 40px;
-    padding-block: 30px;
+    grid-template-columns: 0.8fr 1.2fr;
+    gap: 48px;
+    padding-block: 34px;
     border-bottom: 1px solid var(--line);
   }
 
@@ -61,11 +70,12 @@ const base = import.meta.env.BASE_URL;
     display: grid;
     grid-template-columns: 34px 1fr auto;
     gap: 12px;
-    align-items: baseline;
+    align-items: start;
   }
 
   .topic-name > span,
   .topic-name small {
+    padding-top: 7px;
     color: var(--muted-ink);
     font-size: 0.65rem;
     font-weight: 700;
@@ -77,24 +87,65 @@ const base = import.meta.env.BASE_URL;
     letter-spacing: 0;
   }
 
+  h2 a:hover {
+    color: var(--blue);
+  }
+
+  .topic-name p {
+    margin: 6px 0 0;
+    color: var(--muted-ink);
+    font-size: 0.78rem;
+    line-height: 1.55;
+  }
+
+  .topic-preview {
+    display: grid;
+    gap: 20px;
+  }
+
   .topic-posts {
     display: grid;
-    gap: 10px;
+    gap: 11px;
   }
 
   .topic-posts a {
     width: fit-content;
+    max-width: 100%;
     font-size: 0.9rem;
+    overflow-wrap: anywhere;
   }
 
   .topic-posts a:hover {
     color: var(--blue);
   }
 
+  .view-topic {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    width: fit-content;
+    font-size: 0.65rem;
+    font-weight: 700;
+  }
+
+  .view-topic:hover {
+    color: var(--blue);
+  }
+
   @media (max-width: 760px) {
     .topic-row {
       grid-template-columns: 1fr;
-      gap: 18px;
+      gap: 22px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .topic-name {
+      grid-template-columns: 28px 1fr;
+    }
+
+    .topic-name small {
+      display: none;
     }
   }
 </style>

@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildTopicGroups,
   paginateTopic,
+  topicPagePath,
 } from "../src/lib/topics";
 
 const definitions = [
@@ -66,5 +67,10 @@ describe("topic helpers", () => {
     expect(() => paginateTopic(topic, 0)).toThrow(
       "Topic page size must be greater than zero",
     );
+  });
+
+  it("builds stable first and later page paths", () => {
+    expect(topicPagePath("java", 1)).toBe("java");
+    expect(topicPagePath("java", 2)).toBe("java/2");
   });
 });

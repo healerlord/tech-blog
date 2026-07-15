@@ -32,4 +32,13 @@ describe("production site", () => {
   ])("builds %s", async (path) => {
     await expect(readFile(path, "utf8")).resolves.toBeTruthy();
   });
+
+  it("builds concise topic previews and stable topic archives", async () => {
+    const overview = await readFile("dist/topics/index.html", "utf8");
+    const javaTopic = await readFile("dist/topics/java/index.html", "utf8");
+
+    expect(overview).toContain("查看全部");
+    expect(overview).toContain('href="/topics/java/"');
+    expect(javaTopic).toContain("JVM、Spring 与服务端工程边界");
+  });
 });

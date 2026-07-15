@@ -17,7 +17,7 @@
 - Create: `src/lib/topics.ts`
 - Create: `tests/topics.test.ts`
 
-- [ ] **Step 1: Write failing grouping and pagination tests**
+- [x] **Step 1: Write failing grouping and pagination tests**
 
 ```ts
 expect(buildTopicGroups(posts, definitions)[0]).toMatchObject({
@@ -28,11 +28,11 @@ expect(buildTopicGroups(posts, definitions)[0]).toMatchObject({
 expect(paginateTopic(group, 1)).toHaveLength(2);
 ```
 
-- [ ] **Step 2: Run `pnpm exec vitest run tests/topics.test.ts`**
+- [x] **Step 2: Run `pnpm exec vitest run tests/topics.test.ts`**
 
 Expected: FAIL because `src/lib/topics.ts` does not exist.
 
-- [ ] **Step 3: Add the catalog and minimal pure helpers**
+- [x] **Step 3: Add the catalog and minimal pure helpers**
 
 ```ts
 export function buildTopicGroups<T extends TaggedPost>(posts: readonly T[], definitions: readonly TopicDefinition[]) {
@@ -51,7 +51,7 @@ export function paginateTopic<T>(topic: TopicGroup<T>, pageSize: number) {
 }
 ```
 
-- [ ] **Step 4: Run tests and commit**
+- [x] **Step 4: Run tests and commit**
 
 Expected: topic tests pass without mutating post order.
 
@@ -64,30 +64,30 @@ Expected: topic tests pass without mutating post order.
 - Modify: `src/components/PostList.astro`
 - Modify: `tests/site-output.test.ts`
 
-- [ ] **Step 1: Add failing output assertions**
+- [x] **Step 1: Add failing output assertions**
 
 ```ts
 expect(await readFile("dist/topics/java/index.html", "utf8")).toContain("Java");
 expect(await readFile("dist/topics/index.html", "utf8")).toContain("查看全部");
 ```
 
-- [ ] **Step 2: Run `pnpm test:site`**
+- [x] **Step 2: Run `pnpm test:site`**
 
 Expected: FAIL because the Java topic archive does not exist.
 
-- [ ] **Step 3: Limit overview previews**
+- [x] **Step 3: Limit overview previews**
 
 Render at most four recent article links per topic, retain the total count, and link the topic heading plus `查看全部 N 篇` to its stable archive URL.
 
-- [ ] **Step 4: Generate topic archive pages**
+- [x] **Step 4: Generate topic archive pages**
 
 Use `[...path].astro` static paths. Page one uses `java`; later pages use `java/2`, `java/3`, and so on. Each page renders `PostList` and a pagination navigation when `pageCount > 1`.
 
-- [ ] **Step 5: Add overflow protection**
+- [x] **Step 5: Add overflow protection**
 
 Apply `overflow-wrap: anywhere` to topic preview links and article-row titles so long unbroken English identifiers cannot create horizontal scrolling.
 
-- [ ] **Step 6: Run `pnpm test:site`, `pnpm test:github`, and `pnpm check`**
+- [x] **Step 6: Run `pnpm test:site`, `pnpm test:github`, and `pnpm check`**
 
 Expected: all output tests pass and Astro reports zero diagnostics.
 
@@ -97,11 +97,11 @@ Expected: all output tests pass and Astro reports zero diagnostics.
 - Modify: `docs/superpowers/specs/2026-07-15-technical-blog-homepage-design.md`
 - Modify: `README.md`
 
-- [ ] **Step 1: Document topic behavior**
+- [x] **Step 1: Document topic behavior**
 
 Specify four overview previews, stable slugs, twenty posts per archive page, and generated pagination routes.
 
-- [ ] **Step 2: Run full verification**
+- [x] **Step 2: Run full verification**
 
 ```bash
 pnpm test

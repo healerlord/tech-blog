@@ -1,0 +1,67 @@
+---
+import Pagination from "../../components/Pagination.astro";
+import PostList from "../../components/PostList.astro";
+import { topicDefinitions } from "../../data/topics";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getPublishedPosts, type BlogPost } from "../../lib/content";
+import {
+  buildTopicGroups,
+  paginateTopic,
+  TOPIC_PAGE_SIZE,
+  topicPagePath,
+  type TopicPage,
+} from "../../lib/topics";
+
+export async function getStaticPaths() {
+  const posts = await getPublishedPosts();
+  const topics = buildTopicGroups(posts, topicDefinitions);
+
+  return topics.flatMap((topic) =>
+    paginateTopic(topic, TOPIC_PAGE_SIZE).map((topicPage) => ({
+      params: {
+        path: topicPagePath(topicPage.slug, topicPage.page),
+      },
+      props: { topicPage },
+    })),
+  );
+}
+
+interface Props {
+  topicPage: TopicPage<BlogPost>;
+}
+
+const { topicPage } = Astro.props;
+const startIndex = (topicPage.page - 1) * TOPIC_PAGE_SIZE;
+---
+
+<BaseLayout
+  title={`${topicPage.name} 专题 · KYRIE.DEV`}
+  description={topicPage.description}
+>
+  <section class="container page-shell topic-page">
+    <p class="page-kicker mono">
+      Topic / {topicPage.name} / {topicPage.totalPosts} posts
+    </p>
+    <h1 class="page-title">{topicPage.name}</h1>
+    <p class="page-lede">{topicPage.description}</p>
+
+    <div class="topic-articles">
+      <PostList
+        posts={topicPage.posts}
+        heading={topicPage.pageCount > 1 ? `文章 · 第 ${topicPage.page} 页` : "专题文章"}
+        startIndex={startIndex}
+      />
+      <Pagination
+        slug={topicPage.slug}
+        page={topicPage.page}
+        pageCount={topicPage.pageCount}
+      />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .topic-articles {
+    margin-top: 62px;
+  }
+</style>

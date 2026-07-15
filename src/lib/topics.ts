@@ -1,5 +1,7 @@
 import type { TopicDefinition } from "../data/topics";
 
+export const TOPIC_PAGE_SIZE = 20;
+
 interface TaggedPost {
   data: {
     tags: readonly string[];
@@ -14,6 +16,14 @@ export interface TopicPage<T> extends TopicGroup<T> {
   page: number;
   pageCount: number;
   totalPosts: number;
+}
+
+export function topicPagePath(slug: string, page: number): string {
+  if (!Number.isInteger(page) || page <= 0) {
+    throw new Error("Topic page must be greater than zero");
+  }
+
+  return page === 1 ? slug : `${slug}/${page}`;
 }
 
 export function buildTopicGroups<T extends TaggedPost>(

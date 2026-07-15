@@ -8,9 +8,15 @@ interface Props {
   posts: BlogPost[];
   heading?: string;
   showAllLink?: boolean;
+  startIndex?: number;
 }
 
-const { posts, heading = "最新文章", showAllLink = false } = Astro.props;
+const {
+  posts,
+  heading = "最新文章",
+  showAllLink = false,
+  startIndex = 0,
+} = Astro.props;
 const base = import.meta.env.BASE_URL;
 const formatDate = (date: Date) =>
   new Intl.DateTimeFormat("zh-CN", { month: "2-digit", day: "2-digit" })
@@ -34,7 +40,7 @@ const formatDate = (date: Date) =>
     ) : (
       posts.map((post, index) => (
         <article class="post-row">
-          <span class="post-index mono">{String(index + 1).padStart(2, "0")}</span>
+          <span class="post-index mono">{String(startIndex + index + 1).padStart(2, "0")}</span>
           <h3><a href={joinBase(base, `articles/${post.id}/`)}>{post.data.title}</a></h3>
           <span class="post-tag mono">{post.data.tags.slice(0, 2).join(" / ")}</span>
           <span class="post-meta mono">{formatDate(post.data.publishedAt)} / {post.readingMinutes} MIN</span>
@@ -120,6 +126,10 @@ const formatDate = (date: Date) =>
 
   h3 a:hover {
     color: var(--blue);
+  }
+
+  h3 a {
+    overflow-wrap: anywhere;
   }
 
   .empty-state {
