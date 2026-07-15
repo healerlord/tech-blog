@@ -6,7 +6,7 @@
 
 **Architecture:** Astro generates every route at build time from validated Markdown content. Page-level composition loads structured content through a small content library; presentational Astro components receive data through props. A small amount of framework-free browser JavaScript powers the menu, search dialog, and persisted light/dark theme.
 
-**Tech Stack:** Astro 6, TypeScript, Markdown content collections, Astro Sitemap, Lucide Astro icons, Vitest, pnpm, GitHub Actions
+**Tech Stack:** Astro 7, TypeScript, Markdown content collections, Astro Sitemap, Lucide Astro icons, Vitest, pnpm, GitHub Actions
 
 ---
 
@@ -78,7 +78,7 @@ describe("post helpers", () => {
 Run:
 
 ```bash
-pnpm add astro @astrojs/rss @astrojs/sitemap lucide-astro
+pnpm add astro @astrojs/rss @astrojs/sitemap @lucide/astro
 pnpm add --save-dev @astrojs/check typescript vitest
 ```
 
