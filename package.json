@@ -8,8 +8,10 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "test": "vitest run",
-    "test:site": "pnpm build && vitest run tests/site-output.test.ts"
+    "test": "pnpm test:unit && pnpm test:site && pnpm test:github",
+    "test:github": "GITHUB_ACTIONS=true astro build && vitest run tests/github-output.test.ts",
+    "test:site": "pnpm build && vitest run tests/site-output.test.ts",
+    "test:unit": "vitest run tests/posts.test.ts tests/urls.test.ts"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",

@@ -1,4 +1,6 @@
 ---
+import { joinBase } from "../lib/urls";
+
 const base = import.meta.env.BASE_URL;
 ---
 
@@ -16,8 +18,8 @@ const base = import.meta.env.BASE_URL;
     <p>关注真实生产环境里的设计决策、失败路径和工程边界。这里没有速成教程，只有可复用的经验。</p>
     <div class="profile-links mono">
       <a href="https://github.com/healerlord" rel="me">GITHUB ↗</a>
-      <a href={`${base}about/`}>ABOUT →</a>
-      <a href={`${base}rss.xml`}>RSS ↗</a>
+      <a href={joinBase(base, "about/")}>ABOUT →</a>
+      <a href={joinBase(base, "rss.xml")}>RSS ↗</a>
     </div>
   </aside>
 </section>

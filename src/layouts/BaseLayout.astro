@@ -2,6 +2,7 @@
 import SearchDialog from "../components/SearchDialog.astro";
 import SiteHeader from "../components/SiteHeader.astro";
 import { getPublishedPosts } from "../lib/content";
+import { joinBase } from "../lib/urls";
 import "../styles/global.css";
 
 interface Props {
@@ -17,7 +18,7 @@ const searchItems = posts.map((post) => ({
   title: post.data.title,
   description: post.data.description,
   tags: post.data.tags,
-  url: `${base}articles/${post.id}/`,
+  url: joinBase(base, `articles/${post.id}/`),
 }));
 ---
 
@@ -29,7 +30,7 @@ const searchItems = posts.map((post) => ({
     <meta name="description" content={description} />
     <meta name="theme-color" content="#f3f3ee" />
     <link rel="canonical" href={canonicalUrl} />
-    <link rel="alternate" type="application/rss+xml" title="KYRIE.DEV RSS" href={`${base}rss.xml`} />
+    <link rel="alternate" type="application/rss+xml" title="KYRIE.DEV RSS" href={joinBase(base, "rss.xml")} />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
@@ -51,7 +52,7 @@ const searchItems = posts.map((post) => ({
     </main>
     <footer class="container site-footer mono">
       <span>© 2026 KYRIE.DEV</span>
-      <span>BUILT IN PUBLIC · <a href={`${base}rss.xml`}>RSS AVAILABLE</a></span>
+      <span>BUILT IN PUBLIC · <a href={joinBase(base, "rss.xml")}>RSS AVAILABLE</a></span>
     </footer>
 
     <script>

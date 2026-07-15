@@ -2,6 +2,7 @@
 import { ArrowRight } from "@lucide/astro";
 
 import type { BlogPost } from "../lib/content";
+import { joinBase } from "../lib/urls";
 
 interface Props {
   posts: BlogPost[];
@@ -21,7 +22,7 @@ const formatDate = (date: Date) =>
   <div class="section-heading">
     <h2>{heading}</h2>
     {showAllLink && (
-      <a href={`${base}articles/`}>
+      <a href={joinBase(base, "articles/")}>
         查看全部 {posts.length > 4 ? posts.length : ""} <ArrowRight size={15} stroke-width={2} aria-hidden="true" />
       </a>
     )}
@@ -34,7 +35,7 @@ const formatDate = (date: Date) =>
       posts.map((post, index) => (
         <article class="post-row">
           <span class="post-index mono">{String(index + 1).padStart(2, "0")}</span>
-          <h3><a href={`${base}articles/${post.id}/`}>{post.data.title}</a></h3>
+          <h3><a href={joinBase(base, `articles/${post.id}/`)}>{post.data.title}</a></h3>
           <span class="post-tag mono">{post.data.tags.slice(0, 2).join(" / ")}</span>
           <span class="post-meta mono">{formatDate(post.data.publishedAt)} / {post.readingMinutes} MIN</span>
         </article>

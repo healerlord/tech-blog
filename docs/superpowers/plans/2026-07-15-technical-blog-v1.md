@@ -427,7 +427,7 @@ git commit -m "feat: add blog routes and RSS"
 
 - [ ] **Step 1: Add the official Astro Pages workflow**
 
-Use `withastro/action@v5` for the build job and `actions/deploy-pages@v4` for deployment. Grant only `contents: read`, `pages: write`, and `id-token: write`, and deploy through the `github-pages` environment.
+Use `actions/checkout@v7`, `withastro/action@v6`, and `actions/deploy-pages@v5`, matching the current official Astro workflow. Grant only `contents: read`, `pages: write`, and `id-token: write`, and deploy through the `github-pages` environment.
 
 - [ ] **Step 2: Document local and deployment commands**
 

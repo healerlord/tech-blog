@@ -2,6 +2,7 @@
 import { ArrowRight } from "@lucide/astro";
 
 import type { Project } from "../data/projects";
+import { joinBase } from "../lib/urls";
 
 interface Props {
   projects: Project[];
@@ -9,7 +10,6 @@ interface Props {
 
 const { projects } = Astro.props;
 const base = import.meta.env.BASE_URL;
-const withBase = (path: string) => `${base}${path.replace(/^\/+/, "")}`;
 ---
 
 <section class="project-band">
@@ -24,7 +24,7 @@ const withBase = (path: string) => `${base}${path.replace(/^\/+/, "")}`;
         <p>项目记录正在整理。</p>
       ) : (
         projects.map((project) => (
-          <a id={project.id} class="project-row" href={withBase(project.href)}>
+          <a id={project.id} class="project-row" href={joinBase(base, project.href)}>
             <span>
               <strong>{project.name}</strong>
               <small>{project.description}</small>

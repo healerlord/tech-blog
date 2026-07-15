@@ -2,6 +2,7 @@
 import { GitFork, Rss } from "@lucide/astro";
 
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { joinBase } from "../lib/urls";
 
 const base = import.meta.env.BASE_URL;
 ---
@@ -22,7 +23,7 @@ const base = import.meta.env.BASE_URL;
         <a href="https://github.com/healerlord" rel="me">
           <GitFork size={18} stroke-width={1.8} aria-hidden="true" /> GitHub
         </a>
-        <a href={`${base}rss.xml`}>
+        <a href={joinBase(base, "rss.xml")}>
           <Rss size={18} stroke-width={1.8} aria-hidden="true" /> RSS
         </a>
       </div>
