@@ -1,0 +1,207 @@
+---
+import { Search, X } from "@lucide/astro";
+
+interface SearchItem {
+  title: string;
+  description: string;
+  tags: string[];
+  url: string;
+}
+
+interface Props {
+  items: SearchItem[];
+}
+
+const { items } = Astro.props;
+---
+
+<dialog class="search-dialog" data-search-dialog aria-labelledby="search-title">
+  <div class="search-panel">
+    <div class="search-heading">
+      <div>
+        <p class="mono">SEARCH / INDEX</p>
+        <h2 id="search-title">搜索文章</h2>
+      </div>
+      <button class="icon-button" type="button" data-search-close aria-label="关闭搜索">
+        <X size={19} stroke-width={1.8} />
+      </button>
+    </div>
+
+    <label class="search-field">
+      <Search size={20} stroke-width={1.8} aria-hidden="true" />
+      <span class="sr-only">输入关键词</span>
+      <input type="search" data-search-input placeholder="标题、摘要或标签" autocomplete="off" />
+    </label>
+
+    <p class="search-status mono" data-search-status aria-live="polite">输入关键词开始搜索</p>
+    <div class="search-results" data-search-results></div>
+  </div>
+</dialog>
+
+<script is:inline define:vars={{ items }}>
+  const dialog = document.querySelector("[data-search-dialog]");
+  const input = dialog?.querySelector("[data-search-input]");
+  const results = dialog?.querySelector("[data-search-results]");
+  const status = dialog?.querySelector("[data-search-status]");
+  let lastTrigger = null;
+
+  const normalize = (value) => value.toLocaleLowerCase("zh-CN").trim();
+
+  const renderResults = (query) => {
+    if (!results || !status) return;
+    results.replaceChildren();
+
+    if (!query) {
+      status.textContent = "输入关键词开始搜索";
+      return;
+    }
+
+    const matches = items.filter((item) =>
+      normalize([item.title, item.description, ...item.tags].join(" ")).includes(query),
+    );
+
+    status.textContent = matches.length > 0 ? `找到 ${matches.length} 篇文章` : "没有匹配的文章";
+
+    for (const item of matches) {
+      const link = document.createElement("a");
+      link.className = "search-result";
+      link.href = item.url;
+
+      const title = document.createElement("strong");
+      title.textContent = item.title;
+      const description = document.createElement("span");
+      description.textContent = item.description;
+      const tags = document.createElement("small");
+      tags.textContent = item.tags.join(" / ");
+
+      link.append(title, description, tags);
+      results.append(link);
+    }
+  };
+
+  document.querySelectorAll("[data-search-open]").forEach((trigger) => {
+    trigger.addEventListener("click", () => {
+      if (!(dialog instanceof HTMLDialogElement)) return;
+      lastTrigger = trigger;
+      dialog.showModal();
+      requestAnimationFrame(() => input?.focus());
+    });
+  });
+
+  dialog?.querySelector("[data-search-close]")?.addEventListener("click", () => dialog.close());
+  dialog?.addEventListener("click", (event) => {
+    if (event.target === dialog) dialog.close();
+  });
+  dialog?.addEventListener("close", () => lastTrigger?.focus());
+  input?.addEventListener("input", () => renderResults(normalize(input.value)));
+</script>
+
+<style>
+  .search-dialog {
+    width: min(720px, calc(100% - 34px));
+    max-height: min(720px, calc(100dvh - 34px));
+    padding: 0;
+    border: 1px solid var(--ink);
+    border-radius: 0;
+    background: var(--paper);
+    color: var(--ink);
+  }
+
+  .search-dialog::backdrop {
+    background: rgb(18 19 15 / 68%);
+    backdrop-filter: blur(3px);
+  }
+
+  .search-panel {
+    padding: 28px;
+  }
+
+  .search-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 24px;
+  }
+
+  .search-heading p,
+  .search-heading h2 {
+    margin: 0;
+  }
+
+  .search-heading p,
+  .search-status {
+    color: var(--muted-ink);
+    font-size: 0.7rem;
+    font-weight: 700;
+  }
+
+  .search-heading h2 {
+    margin-top: 7px;
+    font-size: 2rem;
+    line-height: 1.1;
+  }
+
+  .search-field {
+    display: grid;
+    grid-template-columns: 24px 1fr;
+    gap: 12px;
+    align-items: center;
+    margin-top: 28px;
+    padding: 14px 16px;
+    border: 1px solid var(--ink);
+  }
+
+  .search-field input {
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: inherit;
+    font-size: 1rem;
+  }
+
+  .search-field input::placeholder {
+    color: var(--muted-ink);
+  }
+
+  .search-status {
+    margin: 20px 0 8px;
+  }
+
+  .search-results {
+    display: grid;
+  }
+
+  :global(.search-result) {
+    display: grid;
+    gap: 5px;
+    padding: 17px 0;
+    border-top: 1px solid var(--line);
+  }
+
+  :global(.search-result strong) {
+    font-size: 1rem;
+  }
+
+  :global(.search-result span) {
+    color: var(--muted-ink);
+    font-size: 0.86rem;
+  }
+
+  :global(.search-result small) {
+    color: var(--blue);
+    font: 700 0.66rem/1.3 var(--font-mono);
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 480px) {
+    .search-panel {
+      padding: 20px;
+    }
+
+    .search-heading h2 {
+      font-size: 1.65rem;
+    }
+  }
+</style>

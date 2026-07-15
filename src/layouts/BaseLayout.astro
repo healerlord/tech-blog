@@ -1,0 +1,106 @@
+---
+import SearchDialog from "../components/SearchDialog.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import { getPublishedPosts } from "../lib/content";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+const posts = await getPublishedPosts();
+const base = import.meta.env.BASE_URL;
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site);
+const searchItems = posts.map((post) => ({
+  title: post.data.title,
+  description: post.data.description,
+  tags: post.data.tags,
+  url: `${base}articles/${post.id}/`,
+}));
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#f3f3ee" />
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="alternate" type="application/rss+xml" title="KYRIE.DEV RSS" href={`${base}rss.xml`} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <title>{title}</title>
+    <script is:inline>
+      (() => {
+        const saved = localStorage.getItem("kyrie-theme");
+        const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.dataset.theme = saved || (systemDark ? "dark" : "light");
+      })();
+    </script>
+  </head>
+  <body>
+    <SiteHeader />
+    <SearchDialog items={searchItems} />
+    <main>
+      <slot />
+    </main>
+    <footer class="container site-footer mono">
+      <span>© 2026 KYRIE.DEV</span>
+      <span>BUILT IN PUBLIC · <a href={`${base}rss.xml`}>RSS AVAILABLE</a></span>
+    </footer>
+
+    <script>
+      const root = document.documentElement;
+      const toggles = document.querySelectorAll<HTMLButtonElement>("[data-theme-toggle]");
+
+      const syncThemeIcons = () => {
+        const dark = root.dataset.theme === "dark";
+        document.querySelectorAll<HTMLElement>("[data-theme-light-icon]").forEach((icon) => {
+          icon.hidden = dark;
+        });
+        document.querySelectorAll<HTMLElement>("[data-theme-dark-icon]").forEach((icon) => {
+          icon.hidden = !dark;
+        });
+      };
+
+      syncThemeIcons();
+
+      toggles.forEach((toggle) => {
+        toggle.addEventListener("click", () => {
+          const next = root.dataset.theme === "dark" ? "light" : "dark";
+          root.dataset.theme = next;
+          localStorage.setItem("kyrie-theme", next);
+          syncThemeIcons();
+        });
+      });
+    </script>
+  </body>
+</html>
+
+<style>
+  .site-footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    padding-block: 26px 34px;
+    border-top: 1px solid var(--ink);
+    color: var(--muted-ink);
+    font-size: 0.68rem;
+    font-weight: 700;
+  }
+
+  .site-footer a {
+    color: var(--ink);
+  }
+
+  @media (max-width: 480px) {
+    .site-footer {
+      flex-direction: column;
+    }
+  }
+</style>
