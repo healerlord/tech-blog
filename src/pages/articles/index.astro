@@ -1,0 +1,24 @@
+---
+import PostList from "../../components/PostList.astro";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { getPublishedPosts } from "../../lib/content";
+
+const posts = await getPublishedPosts();
+---
+
+<BaseLayout title="文章 · KYRIE.DEV" description="KYRIE.DEV 的技术文章归档。">
+  <section class="container page-shell archive-page">
+    <p class="page-kicker">Writing / {String(posts.length).padStart(2, "0")}</p>
+    <h1 class="page-title">技术文章</h1>
+    <p class="page-lede">围绕 Java、AI 工程、系统设计与生产实践，记录真实问题背后的调用链和决策过程。</p>
+    <div class="archive-list">
+      <PostList posts={posts} heading="全部文章" />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .archive-list {
+    margin-top: 62px;
+  }
+</style>

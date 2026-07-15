@@ -21,4 +21,15 @@ describe("production site", () => {
     expect(html).toContain("最新文章");
     expect(html).toContain("精选项目");
   });
+
+  it.each([
+    "dist/articles/index.html",
+    "dist/articles/agent-systems/index.html",
+    "dist/topics/index.html",
+    "dist/projects/index.html",
+    "dist/about/index.html",
+    "dist/rss.xml",
+  ])("builds %s", async (path) => {
+    await expect(readFile(path, "utf8")).resolves.toBeTruthy();
+  });
 });

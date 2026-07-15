@@ -1,0 +1,20 @@
+---
+import ProjectList from "../components/ProjectList.astro";
+import { projects } from "../data/projects";
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+
+<BaseLayout title="项目 · KYRIE.DEV" description="KYRIE.DEV 的工程实验和项目复盘。">
+  <section class="container page-shell projects-intro">
+    <p class="page-kicker">Selected work / {String(projects.length).padStart(2, "0")}</p>
+    <h1 class="page-title">工程实验</h1>
+    <p class="page-lede">这些项目从具体问题出发，用小范围实现验证架构假设，并把失败路径保留下来。</p>
+  </section>
+  <ProjectList projects={projects} />
+</BaseLayout>
+
+<style>
+  .projects-intro {
+    padding-bottom: 66px;
+  }
+</style>

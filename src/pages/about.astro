@@ -1,0 +1,78 @@
+---
+import { GitFork, Rss } from "@lucide/astro";
+
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const base = import.meta.env.BASE_URL;
+---
+
+<BaseLayout title="关于 · KYRIE.DEV" description="关于 KYRIE.DEV 和这个技术博客。">
+  <section class="container page-shell about-page">
+    <div>
+      <p class="page-kicker">About / 001</p>
+      <h1 class="page-title">在代码之外，<br />理解系统之内。</h1>
+    </div>
+
+    <div class="about-copy">
+      <p>我是 Kyrie，一名关注后端、AI 工程和复杂系统边界的软件工程师。</p>
+      <p>这个博客用来记录真实项目里的设计决策：为什么选择某条路径，假设在哪里失效，以及哪些经验能够带到下一次工程实践。</p>
+      <p>文章会优先讲清调用链、状态和约束，再讨论框架与工具。比起给出一个快速答案，我更关心答案在什么条件下成立。</p>
+
+      <div class="about-links">
+        <a href="https://github.com/healerlord" rel="me">
+          <GitFork size={18} stroke-width={1.8} aria-hidden="true" /> GitHub
+        </a>
+        <a href={`${base}rss.xml`}>
+          <Rss size={18} stroke-width={1.8} aria-hidden="true" /> RSS
+        </a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .about-page {
+    display: grid;
+    grid-template-columns: 1fr minmax(320px, 0.72fr);
+    gap: 80px;
+  }
+
+  .about-copy {
+    padding-top: 14px;
+    border-top: 1px solid var(--ink);
+    font-size: 0.98rem;
+    line-height: 1.85;
+  }
+
+  .about-copy p {
+    margin: 0 0 24px;
+  }
+
+  .about-links {
+    display: flex;
+    gap: 12px;
+    margin-top: 38px;
+  }
+
+  .about-links a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 42px;
+    padding-inline: 14px;
+    border: 1px solid var(--ink);
+    font-weight: 700;
+  }
+
+  .about-links a:hover {
+    background: var(--signal);
+    color: #12130f;
+  }
+
+  @media (max-width: 820px) {
+    .about-page {
+      grid-template-columns: 1fr;
+      gap: 50px;
+    }
+  }
+</style>
