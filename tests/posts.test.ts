@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   calculateReadingMinutes,
+  selectHomepagePosts,
   sortPostsNewestFirst,
 } from "../src/lib/posts";
 
@@ -28,5 +29,36 @@ describe("post helpers", () => {
 
     expect(calculateReadingMinutes(chinese)).toBe(4);
     expect(calculateReadingMinutes(latin)).toBe(1);
+  });
+
+  it("selects one featured post and excludes it from recent posts", () => {
+    const posts = [
+      {
+        id: "featured",
+        data: { featured: true, publishedAt: new Date("2026-07-10") },
+      },
+      {
+        id: "recent",
+        data: { featured: false, publishedAt: new Date("2026-07-12") },
+      },
+    ];
+
+    const result = selectHomepagePosts(posts, 4);
+
+    expect(result.featured.id).toBe("featured");
+    expect(result.recent.map((post) => post.id)).toEqual(["recent"]);
+  });
+
+  it("fails clearly when no featured post exists", () => {
+    const posts = [
+      {
+        id: "regular",
+        data: { featured: false, publishedAt: new Date("2026-07-12") },
+      },
+    ];
+
+    expect(() => selectHomepagePosts(posts, 4)).toThrow(
+      "At least one published post must be featured",
+    );
   });
 });
