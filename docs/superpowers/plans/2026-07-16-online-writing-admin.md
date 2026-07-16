@@ -6,7 +6,7 @@
 
 **Architecture:** Astro statically builds the public blog, `/admin/`, and a generated CMS YAML configuration from the same content and topic contracts. Sveltia CMS commits Markdown directly to `healerlord/tech-blog`; a small Cloudflare Worker performs GitHub OAuth, restricts the caller domain and username, and stores no content or session state.
 
-**Tech Stack:** Astro 7, TypeScript 6, Sveltia CMS 0.170.9, YAML 2.9.0, Vitest 4, Cloudflare Workers/Wrangler 4.111.0, GitHub Actions
+**Tech Stack:** Astro 7, TypeScript 6, Sveltia CMS 0.170.9, YAML 2.9.0, Vitest 4, Cloudflare Workers/Wrangler 4.110.0, GitHub Actions
 
 ---
 
@@ -642,17 +642,29 @@ git commit -m "feat: add static writing admin"
 **Files:**
 - Modify: `package.json`
 - Modify: `pnpm-lock.yaml`
+- Modify: `pnpm-workspace.yaml`
 - Create: `workers/cms-auth/src/index.ts`
 - Create: `workers/cms-auth/wrangler.jsonc`
 - Create: `workers/cms-auth/README.md`
+- Create: `workers/cms-auth/LICENSE.upstream.txt`
 - Create: `tests/cms-auth.test.ts`
 
-- [ ] **Step 1: Install the exact Worker CLI and add scripts**
+- [x] **Step 1: Install the exact Worker CLI and add scripts**
 
 Run:
 
 ```bash
-pnpm add --save-dev --save-exact wrangler@4.111.0
+pnpm add --save-dev --save-exact wrangler@4.110.0
+```
+
+Approve only the Worker runtime build and explicitly keep the optional image
+tool disabled in `pnpm-workspace.yaml`:
+
+```yaml
+allowBuilds:
+  esbuild: true
+  sharp: false
+  workerd: true
 ```
 
 Add scripts to `package.json`:
@@ -664,7 +676,7 @@ Add scripts to `package.json`:
 
 Add `tests/cms-auth.test.ts` to `test:unit`.
 
-- [ ] **Step 2: Write failing Worker security tests**
+- [x] **Step 2: Write failing Worker security tests**
 
 Create `tests/cms-auth.test.ts`:
 
@@ -767,7 +779,7 @@ describe("CMS OAuth Worker", () => {
 });
 ```
 
-- [ ] **Step 3: Run the Worker test and verify RED**
+- [x] **Step 3: Run the Worker test and verify RED**
 
 Run:
 
@@ -777,7 +789,7 @@ pnpm exec vitest run tests/cms-auth.test.ts
 
 Expected: FAIL because the Worker module does not exist.
 
-- [ ] **Step 4: Implement the GitHub-only OAuth Worker**
+- [x] **Step 4: Implement the GitHub-only OAuth Worker**
 
 Create `workers/cms-auth/src/index.ts`:
 
@@ -973,7 +985,7 @@ export default {
 };
 ```
 
-- [ ] **Step 5: Add reproducible Worker configuration**
+- [x] **Step 5: Add reproducible Worker configuration**
 
 Create `workers/cms-auth/wrangler.jsonc`:
 
@@ -1016,7 +1028,7 @@ The GitHub OAuth App callback is the deployed Worker URL followed by `/callback`
 No OAuth value belongs in the repository or generated site.
 ```
 
-- [ ] **Step 6: Run Worker tests and static analysis**
+- [x] **Step 6: Run Worker tests and static analysis**
 
 Run:
 
@@ -1028,7 +1040,7 @@ pnpm check
 
 Expected: all Worker tests pass, Wrangler bundles the Worker without deploying it, and Astro reports zero diagnostics.
 
-- [ ] **Step 7: Commit the OAuth Worker**
+- [x] **Step 7: Commit the OAuth Worker**
 
 ```bash
 git add package.json pnpm-lock.yaml workers/cms-auth tests/cms-auth.test.ts

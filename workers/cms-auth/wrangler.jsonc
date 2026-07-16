@@ -1,0 +1,10 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "kyrie-dev-cms-auth",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-16",
+  "vars": {
+    "ALLOWED_DOMAINS": "healerlord.github.io",
+    "ALLOWED_USERS": "healerlord"
+  }
+}
