@@ -40,6 +40,8 @@ interface CmsConfig {
   app_title: string;
   site_url: string;
   display_url: string;
+  media_folder: string;
+  public_folder: string;
   backend: CmsBackend;
   collections: CmsCollection[];
 }
@@ -48,6 +50,7 @@ export function createCmsConfig({
   siteUrl,
   authUrl,
 }: CmsConfigOptions): CmsConfig {
+  const normalizedSiteUrl = siteUrl.endsWith("/") ? siteUrl : `${siteUrl}/`;
   const backend: CmsBackend = {
     name: "github",
     repo: "healerlord/tech-blog",
@@ -60,6 +63,8 @@ export function createCmsConfig({
     app_title: "KYRIE.DEV 写作后台",
     site_url: siteUrl,
     display_url: siteUrl,
+    media_folder: "public/uploads",
+    public_folder: new URL("uploads", normalizedSiteUrl).pathname,
     backend,
     collections: [
       {

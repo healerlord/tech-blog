@@ -36,6 +36,21 @@ describe("CMS configuration", () => {
     expect(config.backend).not.toHaveProperty("base_url");
   });
 
+  it("stores uploaded media in the public directory", () => {
+    const config = createCmsConfig({ siteUrl: "http://localhost:4321/" });
+
+    expect(config.media_folder).toBe("public/uploads");
+    expect(config.public_folder).toBe("/uploads");
+  });
+
+  it("includes the GitHub Pages base path in uploaded media URLs", () => {
+    const config = createCmsConfig({
+      siteUrl: "https://healerlord.github.io/tech-blog/",
+    });
+
+    expect(config.public_folder).toBe("/tech-blog/uploads");
+  });
+
   it("keeps CMS tags synchronized with the topic catalog", () => {
     const config = createCmsConfig({ siteUrl: "http://localhost:4321/" });
     const blog = config.collections[0];
