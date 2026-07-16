@@ -13,4 +13,6 @@ export default defineConfig({
   site,
   base,
   integrations: [sitemap()],
+  // The self-contained CMS is isolated to /admin and is about 600 KB over gzip.
+  vite: { build: { chunkSizeWarningLimit: 2000 } },
 });

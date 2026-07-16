@@ -994,7 +994,7 @@ Create `workers/cms-auth/wrangler.jsonc`:
   "$schema": "../../node_modules/wrangler/config-schema.json",
   "name": "kyrie-dev-cms-auth",
   "main": "src/index.ts",
-  "compatibility_date": "2026-07-16",
+  "compatibility_date": "2026-07-15",
   "vars": {
     "ALLOWED_DOMAINS": "healerlord.github.io",
     "ALLOWED_USERS": "healerlord"
@@ -1179,7 +1179,7 @@ git commit -m "docs: add writing admin deployment runbook"
 **Files:**
 - Modify only if a verification failure exposes a defect in the files above.
 
-- [ ] **Step 1: Run the complete automated suite**
+- [x] **Step 1: Run the complete automated suite**
 
 Run:
 
@@ -1191,7 +1191,7 @@ git diff --check
 
 Expected: all unit, local-output, and GitHub-output tests pass; Astro reports zero errors, warnings, and hints; Git reports no whitespace errors.
 
-- [ ] **Step 2: Start local admin and Worker previews**
+- [x] **Step 2: Start local admin and Worker previews**
 
 In separate terminals run:
 
@@ -1212,7 +1212,11 @@ Open `http://127.0.0.1:4321/admin/` at 1440 x 900, 390 x 844, and 320 x 568. Con
 - the generated `config.yml` loads successfully;
 - no console error indicates a blocked self-hosted script or missing base path.
 
-- [ ] **Step 4: Verify the production static artifact**
+Environment note: the in-app browser runtime was unavailable during execution
+(`agent.browsers.list()` returned no browsers). HTTP and generated-output checks
+passed, but viewport screenshots remain a manual verification item.
+
+- [x] **Step 4: Verify the production static artifact**
 
 Run:
 
