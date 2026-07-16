@@ -1,5 +1,6 @@
 ---
 title: "Spring 事务失效：比注解更值得看的调用链"
+slug: "spring-transaction-chain"
 description: "从代理边界和线程切换解释常见事务失效，而不是继续背注解规则。"
 publishedAt: 2026-06-16
 tags: ["Java", "Spring"]

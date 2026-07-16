@@ -46,3 +46,8 @@ export const topicDefinitions: TopicDefinition[] = [
     description: "从调用链理解 Spring 的运行机制。",
   },
 ];
+
+export const topicNames = topicDefinitions.map(({ name }) => name) as [
+  string,
+  ...string[],
+];

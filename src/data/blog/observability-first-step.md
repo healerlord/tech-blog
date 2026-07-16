@@ -1,5 +1,6 @@
 ---
 title: "一次可观测性改造，应该从哪里开始"
+slug: "observability-first-step"
 description: "先统一请求身份和错误语义，再决定采集多少指标与日志。"
 publishedAt: 2026-05-30
 tags: ["Observability", "Production"]

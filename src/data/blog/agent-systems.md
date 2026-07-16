@@ -1,5 +1,6 @@
 ---
 title: "Agent 系统真正难的，不是调用模型"
+slug: "agent-systems"
 description: "从一次线上超时开始，拆解任务编排、工具调用、状态管理和可观测性之间真正的耦合点。"
 publishedAt: 2026-07-12
 tags: ["Agent", "Architecture", "AI"]

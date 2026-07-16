@@ -1,5 +1,6 @@
 ---
 title: "从一次超时，看清任务编排的边界"
+slug: "task-orchestration"
 description: "把重试、超时、取消与幂等放在同一条任务生命周期里重新审视。"
 publishedAt: 2026-07-05
 tags: ["Architecture", "Production"]

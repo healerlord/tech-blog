@@ -46,7 +46,7 @@
 - Create: `tests/content-schema.test.ts`
 - Modify: `package.json`
 
-- [ ] **Step 1: Write failing schema, draft, and slug tests**
+- [x] **Step 1: Write failing schema, draft, and slug tests**
 
 Create `tests/content-schema.test.ts`:
 
@@ -122,7 +122,7 @@ describe("authoring content contract", () => {
 
 Add `tests/content-schema.test.ts` to `test:unit` in `package.json`.
 
-- [ ] **Step 2: Run the focused test and verify RED**
+- [x] **Step 2: Run the focused test and verify RED**
 
 Run:
 
@@ -132,7 +132,7 @@ pnpm exec vitest run tests/content-schema.test.ts
 
 Expected: FAIL because `src/lib/blog-schema.ts` and the new helper exports do not exist.
 
-- [ ] **Step 3: Export the topic names and implement the schema**
+- [x] **Step 3: Export the topic names and implement the schema**
 
 Keep `topicDefinitions` unchanged and add this export in `src/data/topics.ts`:
 
@@ -190,7 +190,7 @@ const blog = defineCollection({
 export const collections = { blog };
 ```
 
-- [ ] **Step 4: Add pure publication and identity helpers**
+- [x] **Step 4: Add pure publication and identity helpers**
 
 Append to `src/lib/posts.ts`:
 
@@ -240,7 +240,7 @@ export async function getPublishedPosts(): Promise<BlogPost[]> {
 
 Import `assertPostIdentity` and `filterPublishedPosts` from `./posts` in that file.
 
-- [ ] **Step 5: Migrate existing article slugs without changing URLs**
+- [x] **Step 5: Migrate existing article slugs without changing URLs**
 
 Add a `slug` field matching each current filename:
 
@@ -261,7 +261,7 @@ slug: "task-orchestration"
 slug: "vector-database-decisions"
 ```
 
-- [ ] **Step 6: Run focused and existing tests**
+- [x] **Step 6: Run focused and existing tests**
 
 Run:
 
@@ -272,7 +272,7 @@ pnpm check
 
 Expected: all tests pass and Astro reports zero diagnostics.
 
-- [ ] **Step 7: Commit the content contract**
+- [x] **Step 7: Commit the content contract**
 
 ```bash
 git add package.json src/content.config.ts src/data/topics.ts src/lib/blog-schema.ts src/lib/posts.ts src/lib/content.ts src/data/blog tests/content-schema.test.ts
