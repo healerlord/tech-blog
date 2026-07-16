@@ -17,7 +17,15 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      CMS_AUTH_URL: ${{ vars.CMS_AUTH_URL }}
     steps:
+      - name: Verify CMS auth configuration
+        run: |
+          if [ -z "$CMS_AUTH_URL" ]; then
+            echo "::error::Set the CMS_AUTH_URL repository variable before deploying."
+            exit 1
+          fi
       - name: Checkout repository
         uses: actions/checkout@v7
       - name: Install, build, and upload site

@@ -1051,11 +1051,13 @@ git commit -m "feat: add restricted CMS OAuth worker"
 
 **Files:**
 - Modify: `.github/workflows/deploy.yml`
+- Modify: `package.json`
 - Modify: `README.md`
 - Create: `docs/online-writing-setup.md`
+- Create: `tests/deploy-workflow.test.ts`
 - Modify: `tests/github-output.test.ts`
 
-- [ ] **Step 1: Make the Pages build require the Worker URL**
+- [x] **Step 1: Make the Pages build require the Worker URL**
 
 Add the environment and validation step to the `build` job in `.github/workflows/deploy.yml`:
 
@@ -1077,7 +1079,7 @@ Add the environment and validation step to the `build` job in `.github/workflows
 
 Keep the existing Astro build and Pages deploy steps after these lines.
 
-- [ ] **Step 2: Add a credential-leak regression assertion**
+- [x] **Step 2: Add a credential-leak regression assertion**
 
 Extend the GitHub admin output test:
 
@@ -1087,7 +1089,7 @@ expect(config).not.toMatch(/github_pat_/i);
 expect(html).not.toMatch(/client[_-]?secret/i);
 ```
 
-- [ ] **Step 3: Write the external setup runbook**
+- [x] **Step 3: Write the external setup runbook**
 
 Create `docs/online-writing-setup.md` with these sections and values:
 
@@ -1139,7 +1141,7 @@ pnpm cms:auth:deploy
 - 误发布：把对应文章的 `draft` 改回 `true` 并提交。
 ```
 
-- [ ] **Step 4: Link the runbook from README**
+- [x] **Step 4: Link the runbook from README**
 
 Add an `在线写作` section after `管理专题`:
 
@@ -1153,7 +1155,7 @@ Add an `在线写作` section after `管理专题`:
 [`docs/online-writing-setup.md`](docs/online-writing-setup.md)。
 ```
 
-- [ ] **Step 5: Run deployment-facing tests**
+- [x] **Step 5: Run deployment-facing tests**
 
 Run:
 
@@ -1165,7 +1167,7 @@ git diff --check
 
 Expected: the Pages build uses the repository base path and OAuth URL, Worker tests pass, and Git reports no whitespace errors.
 
-- [ ] **Step 6: Commit deployment documentation**
+- [x] **Step 6: Commit deployment documentation**
 
 ```bash
 git add .github/workflows/deploy.yml README.md docs/online-writing-setup.md tests/github-output.test.ts

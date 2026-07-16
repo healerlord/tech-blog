@@ -52,6 +52,14 @@ visualAlt: "文章技术视觉的文字说明"
 
 专题路径由 `slug` 决定。发布后可以修改专题名称和说明，但不应随意修改 `slug`，否则旧链接会失效。
 
+## 在线写作
+
+部署完成后，从 `/tech-blog/admin/` 登录写作后台。文章仍以 Markdown
+保存在 GitHub；草稿使用 `draft: true`，发布会触发现有 Pages 工作流。
+
+首次启用需要配置免费的 Cloudflare OAuth Worker，参见
+[`docs/online-writing-setup.md`](docs/online-writing-setup.md)。
+
 ## GitHub Pages
 
 当前默认目标为：

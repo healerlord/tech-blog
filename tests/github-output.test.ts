@@ -27,5 +27,8 @@ describe("GitHub Pages output", () => {
     expect(config).toContain("https://cms-auth.example.workers.dev");
     expect(config).toContain("- oauth");
     expect(config).not.toContain("GITHUB_CLIENT_SECRET");
+    expect(config).not.toMatch(/client[_-]?secret/i);
+    expect(config).not.toMatch(/github_pat_/i);
+    expect(html).not.toMatch(/client[_-]?secret/i);
   });
 });
