@@ -17,4 +17,15 @@ describe("GitHub Pages output", () => {
       "https://healerlord.github.io/tech-blog/articles/agent-systems/",
     );
   });
+
+  it("builds the admin for the Pages base path with OAuth only", async () => {
+    const html = await readFile("dist/admin/index.html", "utf8");
+    const config = await readFile("dist/admin/config.yml", "utf8");
+
+    expect(html).toContain('src="/tech-blog/_astro/');
+    expect(config).toContain("https://healerlord.github.io/tech-blog/");
+    expect(config).toContain("https://cms-auth.example.workers.dev");
+    expect(config).toContain("- oauth");
+    expect(config).not.toContain("GITHUB_CLIENT_SECRET");
+  });
 });

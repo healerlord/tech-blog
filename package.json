@@ -9,15 +9,17 @@
     "preview": "astro preview",
     "check": "astro check",
     "test": "pnpm test:unit && pnpm test:site && pnpm test:github",
-    "test:github": "GITHUB_ACTIONS=true astro build && vitest run tests/github-output.test.ts",
+    "test:github": "CMS_AUTH_URL=https://cms-auth.example.workers.dev GITHUB_ACTIONS=true astro build && vitest run tests/github-output.test.ts",
     "test:site": "pnpm build && vitest run tests/site-output.test.ts",
-    "test:unit": "vitest run tests/content-schema.test.ts tests/posts.test.ts tests/topics.test.ts tests/urls.test.ts"
+    "test:unit": "vitest run tests/cms-config.test.ts tests/content-schema.test.ts tests/posts.test.ts tests/topics.test.ts tests/urls.test.ts"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",
     "@astrojs/sitemap": "^3.7.3",
     "@lucide/astro": "^1.24.0",
-    "astro": "^7.0.9"
+    "@sveltia/cms": "0.170.9",
+    "astro": "^7.0.9",
+    "yaml": "2.9.0"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",

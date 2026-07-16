@@ -6,7 +6,7 @@
 
 **Architecture:** Astro statically builds the public blog, `/admin/`, and a generated CMS YAML configuration from the same content and topic contracts. Sveltia CMS commits Markdown directly to `healerlord/tech-blog`; a small Cloudflare Worker performs GitHub OAuth, restricts the caller domain and username, and stores no content or session state.
 
-**Tech Stack:** Astro 7, TypeScript 6, Sveltia CMS 0.171.0, YAML 2.9.0, Vitest 4, Cloudflare Workers/Wrangler 4.111.0, GitHub Actions
+**Tech Stack:** Astro 7, TypeScript 6, Sveltia CMS 0.170.9, YAML 2.9.0, Vitest 4, Cloudflare Workers/Wrangler 4.111.0, GitHub Actions
 
 ---
 
@@ -291,17 +291,17 @@ git commit -m "feat: validate authored blog content"
 - Modify: `tests/site-output.test.ts`
 - Modify: `tests/github-output.test.ts`
 
-- [ ] **Step 1: Install exact CMS and YAML versions**
+- [x] **Step 1: Install exact CMS and YAML versions**
 
 Run:
 
 ```bash
-pnpm add --save-exact @sveltia/cms@0.171.0 yaml@2.9.0
+pnpm add --save-exact @sveltia/cms@0.170.9 yaml@2.9.0
 ```
 
 Expected: `package.json` contains exact versions without `^` or `~` and the lockfile records both packages.
 
-- [ ] **Step 2: Write failing CMS configuration tests**
+- [x] **Step 2: Write failing CMS configuration tests**
 
 Create `tests/cms-config.test.ts`:
 
@@ -357,7 +357,7 @@ describe("CMS configuration", () => {
 
 Add `tests/cms-config.test.ts` to `test:unit`.
 
-- [ ] **Step 3: Run the CMS tests and verify RED**
+- [x] **Step 3: Run the CMS tests and verify RED**
 
 Run:
 
@@ -367,7 +367,7 @@ pnpm exec vitest run tests/cms-config.test.ts
 
 Expected: FAIL because `src/lib/cms-config.ts` does not exist.
 
-- [ ] **Step 4: Implement the structured CMS configuration**
+- [x] **Step 4: Implement the structured CMS configuration**
 
 Create `src/lib/cms-config.ts`:
 
@@ -511,7 +511,7 @@ export function createCmsConfig({
 }
 ```
 
-- [ ] **Step 5: Add the static YAML endpoint**
+- [x] **Step 5: Add the static YAML endpoint**
 
 Create `src/pages/admin/config.yml.ts`:
 
@@ -541,7 +541,7 @@ export const GET: APIRoute = ({ site }) => {
 };
 ```
 
-- [ ] **Step 6: Add the bundled no-index admin shell**
+- [x] **Step 6: Add the bundled no-index admin shell**
 
 Create `src/pages/admin/index.astro`:
 
@@ -579,7 +579,7 @@ const csp = [
 </html>
 ```
 
-- [ ] **Step 7: Add static output assertions**
+- [x] **Step 7: Add static output assertions**
 
 Add to `tests/site-output.test.ts`:
 
@@ -617,7 +617,7 @@ Update `test:github` to provide a non-secret test auth URL:
 "test:github": "CMS_AUTH_URL=https://cms-auth.example.workers.dev GITHUB_ACTIONS=true astro build && vitest run tests/github-output.test.ts"
 ```
 
-- [ ] **Step 8: Run admin unit and output tests**
+- [x] **Step 8: Run admin unit and output tests**
 
 Run:
 
@@ -630,7 +630,7 @@ pnpm check
 
 Expected: the CMS tests and both build modes pass; Astro reports zero diagnostics.
 
-- [ ] **Step 9: Commit the static admin**
+- [x] **Step 9: Commit the static admin**
 
 ```bash
 git add package.json pnpm-lock.yaml src/lib/cms-config.ts src/pages/admin tests/cms-config.test.ts tests/site-output.test.ts tests/github-output.test.ts

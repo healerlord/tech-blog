@@ -1,0 +1,31 @@
+---
+const authUrl = process.env.CMS_AUTH_URL?.trim();
+const authOrigin = authUrl ? new URL(authUrl).origin : "";
+const csp = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https:",
+  `connect-src 'self' https://api.github.com https://github.com ${authOrigin}`.trim(),
+  "worker-src 'self' blob:",
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self' https://github.com",
+].join("; ");
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta http-equiv="Content-Security-Policy" content={csp} />
+    <title>KYRIE.DEV 写作后台</title>
+  </head>
+  <body>
+    <script>
+      import "@sveltia/cms";
+    </script>
+  </body>
+</html>

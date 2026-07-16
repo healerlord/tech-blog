@@ -41,4 +41,15 @@ describe("production site", () => {
     expect(overview).toContain('href="/topics/java/"');
     expect(javaTopic).toContain("JVM、Spring 与服务端工程边界");
   });
+
+  it("builds a bundled no-index writing admin", async () => {
+    const html = await readFile("dist/admin/index.html", "utf8");
+    const config = await readFile("dist/admin/config.yml", "utf8");
+
+    expect(html).toContain('content="noindex, nofollow"');
+    expect(html).toContain("Content-Security-Policy");
+    expect(html).not.toContain("unpkg.com");
+    expect(config).toContain("auth_methods:");
+    expect(config).toContain("- token");
+  });
 });
