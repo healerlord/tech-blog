@@ -1,3 +1,5 @@
+import { readFile } from "node:fs/promises";
+
 import { parse, stringify } from "yaml";
 import { describe, expect, it } from "vitest";
 
@@ -5,6 +7,13 @@ import { topicNames } from "../src/data/topics";
 import { createCmsConfig } from "../src/lib/cms-config";
 
 describe("CMS configuration", () => {
+  it("explicitly initializes the CMS when bundled as an ES module", async () => {
+    const source = await readFile("src/pages/admin/index.astro", "utf8");
+
+    expect(source).toContain('import CMS from "@sveltia/cms"');
+    expect(source).toContain("CMS.init()");
+  });
+
   it("uses OAuth and the configured repository in production", () => {
     const config = createCmsConfig({
       siteUrl: "https://healerlord.github.io/tech-blog/",
