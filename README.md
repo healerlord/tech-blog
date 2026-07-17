@@ -26,8 +26,18 @@ pnpm build         # 生成 dist 静态站点
 
 ## 写文章
 
-推荐方式：本地写作台。运行 `pnpm dev` 后访问
-`http://localhost:4321/write/`，获得 Typora 式的所见即所得写作体验：
+推荐方式：`/write` 写作台，本地和线上共用同一套 Typora 式界面。
+
+- **本地**：`pnpm dev` 后访问 `http://localhost:4321/write/`，自动进入文件模式，停笔自动保存到 `src/data/blog`。
+- **线上**：访问 `https://healerlord.github.io/tech-blog/write/`，粘贴一个
+  Fine-grained Token（仅需本仓库 Contents 读写权限）登录 GitHub 模式。
+  线上没有自动保存——`⌘S` 或「保存」按钮把当前文章作为一个 commit
+  提交到 `main`（带 sha 冲突检测，远端有新提交时会报错而不是覆盖），
+  每次提交会触发 Pages 重新部署；`draft: true` 的草稿不会出现在公开页面。
+  Token 只存在浏览器 localStorage，右上角可退出登录。
+  线上上传的图片在下一次部署完成后才可访问。
+
+写作台核心能力：
 
 - 左侧文章库支持筛选、新建草稿，正文区输入 Markdown 语法实时渲染，`/` 唤起插入菜单；
 - 元信息（摘要、发布日期、专题、草稿/发布、首页推荐）在右侧「文章设置」抽屉中编辑；

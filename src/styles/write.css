@@ -202,6 +202,24 @@
   color: #12130f;
 }
 
+.backend-badge {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted-ink);
+  white-space: nowrap;
+}
+
+.backend-badge:empty {
+  display: none;
+}
+
+.save-button {
+  padding: 0.3rem 0.75rem;
+  font-size: 0.78rem;
+}
+
 .ghost-button {
   display: inline-flex;
   align-items: center;
@@ -672,6 +690,31 @@
   font-family: var(--font-mono);
   background: var(--surface);
   padding: 0.1rem 0.35rem;
+}
+
+.local-only .gate-field {
+  margin: 1.1rem 0 0.75rem;
+}
+
+.local-only .gate-field input {
+  width: 100%;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+}
+
+.local-only .gate-field input:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: -1px;
+}
+
+.local-only .settings-errors {
+  margin-top: 0.9rem;
+  text-align: left;
 }
 
 /* ---------- Empty state ---------- */

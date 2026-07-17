@@ -11,7 +11,7 @@ const csp = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self' data:",
-  "connect-src 'self'",
+  "connect-src 'self' https://api.github.com",
   "worker-src 'self' blob:",
   "object-src 'none'",
   "base-uri 'self'",
@@ -55,8 +55,8 @@ const csp = [
           />
         </div>
         <ul id="library-list" class="post-list"></ul>
-        <footer class="library-foot">
-          本地模式 · 保存即写入 src/data/blog
+        <footer id="library-foot" class="library-foot">
+          正在连接写作后端…
         </footer>
       </aside>
 
@@ -81,9 +81,27 @@ const csp = [
             </svg>
           </button>
           <span id="doc-crumb" class="doc-crumb">写作台</span>
+          <span id="backend-badge" class="backend-badge"></span>
           <span class="workbar-spacer"></span>
           <span id="save-status" class="save-status" data-state="idle"></span>
           <span id="doc-state" class="doc-state"></span>
+          <button id="save-button" class="solid-button save-button" type="button">
+            保存
+          </button>
+          <button
+            id="logout-button"
+            class="ghost-button"
+            type="button"
+            aria-label="退出 GitHub 登录"
+            hidden
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path
+                d="M6 2H3v12h3M10 5l3 3-3 3M13 8H6"
+                stroke="currentColor"
+                stroke-width="1.5"></path>
+            </svg>
+          </button>
           <button
             id="open-settings"
             class="ghost-button"
@@ -180,12 +198,35 @@ const csp = [
           </div>
         </aside>
 
-        <div id="local-only" class="local-only">
+        <div id="gate" class="local-only visible">
           <div class="panel">
-            <h2>写作台仅在本地开发环境可用</h2>
-            <p>在项目目录运行 <code>pnpm dev</code>，</p>
-            <p>然后访问 <code>http://localhost:4321/write/</code>。</p>
-            <p>线上发布链路仍使用 /admin/。</p>
+            <div id="gate-boot">
+              <h2>正在连接写作后端…</h2>
+              <p>本地开发环境自动使用文件模式。</p>
+            </div>
+            <div id="gate-login" hidden>
+              <h2>连接 GitHub 开始写作</h2>
+              <p>
+                粘贴一个 Fine-grained Token（仅需 tech-blog 仓库的
+                Contents 读写权限）。Token 只保存在当前浏览器中。
+              </p>
+              <div class="field gate-field">
+                <input
+                  id="gate-token"
+                  type="password"
+                  placeholder="github_pat_…"
+                  autocomplete="off"
+                />
+              </div>
+              <button id="gate-submit" class="solid-button" type="button">
+                连接 GitHub
+              </button>
+              <p id="gate-error" class="settings-errors"></p>
+              <p class="field-hint">
+                在 GitHub「Settings → Developer settings → Fine-grained
+                tokens」中生成，保存和发布会以 commit 形式写入仓库并触发部署。
+              </p>
+            </div>
           </div>
         </div>
       </main>

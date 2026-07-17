@@ -1,13 +1,29 @@
 import { Crepe } from "@milkdown/crepe";
 
 import { topicNames } from "../data/topics";
-import type { PostFrontmatter, PostSummary } from "./write-store";
+import {
+  parsePostFile,
+  serializePostFile,
+  summarizePosts,
+  validatePost,
+  type PostFrontmatter,
+  type PostSummary,
+} from "./write-store";
+import {
+  createGithubWriteClient,
+  DEFAULT_GITHUB_WRITE_CONFIG,
+  GithubWriteError,
+  type GithubWriteClient,
+} from "./write-github";
 
 import "@milkdown/crepe/theme/common/style.css";
 import "@milkdown/crepe/theme/frame.css";
 
-const API = "/__write/api";
+const LOCAL_API = "/__write/api";
 const AUTOSAVE_DELAY = 1600;
+const TOKEN_STORAGE_KEY = "kyrie-write-token";
+const BACKEND_OVERRIDE_KEY = "kyrie-write-backend";
+const API_BASE_OVERRIDE_KEY = "kyrie-write-api-base";
 
 // Saving an article rewrites a watched content file; the dev server answers
 // with a full-reload broadcast that would wipe the editor state mid-typing.
@@ -28,6 +44,31 @@ interface PostDocumentPayload {
   body: string;
 }
 
+interface ValidationIssue {
+  field: string;
+  message: string;
+}
+
+class BackendError extends Error {
+  constructor(
+    message: string,
+    public readonly issues: ValidationIssue[] = [],
+  ) {
+    super(message);
+  }
+}
+
+interface WriteBackend {
+  label: string;
+  autosave: boolean;
+  canLogout: boolean;
+  list(): Promise<PostSummary[]>;
+  load(slug: string): Promise<PostDocumentPayload>;
+  save(slug: string, document: PostDocumentPayload): Promise<void>;
+  create(document: PostDocumentPayload): Promise<void>;
+  uploadAsset(name: string, bytes: Uint8Array): Promise<string>;
+}
+
 function el<T extends HTMLElement>(id: string): T {
   const node = document.getElementById(id);
   if (!node) {
@@ -42,6 +83,9 @@ const libraryFilter = el<HTMLInputElement>("library-filter");
 const docCrumb = el<HTMLElement>("doc-crumb");
 const saveStatus = el<HTMLElement>("save-status");
 const docState = el<HTMLElement>("doc-state");
+const backendBadge = el<HTMLElement>("backend-badge");
+const saveButton = el<HTMLButtonElement>("save-button");
+const logoutButton = el<HTMLButtonElement>("logout-button");
 const docTitle = el<HTMLInputElement>("doc-title");
 const metaDate = el<HTMLElement>("meta-date");
 const metaTags = el<HTMLElement>("meta-tags");
@@ -63,14 +107,21 @@ const npTitle = el<HTMLInputElement>("np-title");
 const npSlug = el<HTMLInputElement>("np-slug");
 const npTags = el<HTMLDivElement>("np-tags");
 const npError = el<HTMLElement>("np-error");
-const localOnly = el<HTMLElement>("local-only");
+const gate = el<HTMLElement>("gate");
+const gateBoot = el<HTMLElement>("gate-boot");
+const gateLogin = el<HTMLElement>("gate-login");
+const gateToken = el<HTMLInputElement>("gate-token");
+const gateSubmit = el<HTMLButtonElement>("gate-submit");
+const gateError = el<HTMLElement>("gate-error");
 
+let backend: WriteBackend | null = null;
 let posts: PostSummary[] = [];
 let current: { slug: string; frontmatter: PostFrontmatter } | null = null;
 let crepe: Crepe | null = null;
 let mounting = false;
 let dirty = false;
 let saveTimer: ReturnType<typeof setTimeout> | null = null;
+let saving = false;
 let npSlugTouched = false;
 
 function suggestSlug(title: string): string {
@@ -83,11 +134,12 @@ function suggestSlug(title: string): string {
 function setStatus(state: "idle" | "dirty" | "saving" | "saved" | "error") {
   saveStatus.dataset.state = state;
   const now = new Date().toLocaleTimeString("zh-CN", { hour12: false });
+  const savedLabel = backend?.autosave ? "已保存" : "已提交";
   saveStatus.textContent = {
     idle: "已就绪",
-    dirty: "未保存",
-    saving: "保存中…",
-    saved: `已保存 ${now}`,
+    dirty: backend?.autosave ? "未保存" : "未提交 · ⌘S 保存",
+    saving: backend?.autosave ? "保存中…" : "提交中…",
+    saved: `${savedLabel} ${now}`,
     error: "保存失败 · 打开设置查看",
   }[state];
 }
@@ -196,6 +248,31 @@ function renderLibrary() {
   }
 }
 
+function updateSummary(frontmatter: PostFrontmatter) {
+  const summary: PostSummary = {
+    slug: frontmatter.slug,
+    title: frontmatter.title,
+    description: frontmatter.description,
+    publishedAt: frontmatter.publishedAt,
+    tags: frontmatter.tags,
+    featured: frontmatter.featured,
+    draft: frontmatter.draft,
+  };
+  const index = posts.findIndex((post) => post.slug === frontmatter.slug);
+  if (index >= 0) {
+    posts[index] = summary;
+  } else {
+    posts.unshift(summary);
+  }
+  posts.sort((a, b) => {
+    if (a.publishedAt !== b.publishedAt) {
+      return a.publishedAt < b.publishedAt ? 1 : -1;
+    }
+    return a.slug.localeCompare(b.slug);
+  });
+  renderLibrary();
+}
+
 function collectDocument(): PostDocumentPayload | null {
   if (!current || !crepe) {
     return null;
@@ -215,48 +292,50 @@ function collectDocument(): PostDocumentPayload | null {
   };
 }
 
+function describeError(error: unknown): {
+  text: string;
+  issues: ValidationIssue[];
+} {
+  if (error instanceof BackendError) {
+    return { text: error.message, issues: error.issues };
+  }
+  if (error instanceof GithubWriteError) {
+    return { text: error.message, issues: [] };
+  }
+  return { text: "未知错误，请查看控制台", issues: [] };
+}
+
 async function saveNow(): Promise<boolean> {
   const documentPayload = collectDocument();
-  if (!documentPayload || !current) {
+  if (!documentPayload || !current || !backend || saving) {
     return true;
   }
   if (saveTimer) {
     clearTimeout(saveTimer);
     saveTimer = null;
   }
+  saving = true;
   setStatus("saving");
   try {
-    const response = await fetch(`${API}/posts/${current.slug}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(documentPayload),
-    });
-    if (!response.ok) {
-      const data = (await response.json()) as {
-        errors?: { field: string; message: string }[];
-        error?: string;
-      };
-      const issues = data.errors ?? [
-        { field: "save", message: data.error ?? "未知错误" },
-      ];
-      settingsErrors.textContent = issues
-        .map((issue) => `${issue.field}: ${issue.message}`)
-        .join("；");
-      setStatus("error");
-      return false;
-    }
+    await backend.save(current.slug, documentPayload);
     dirty = false;
     settingsErrors.textContent = "";
     current.frontmatter = documentPayload.frontmatter;
     renderState(documentPayload.frontmatter);
     renderMetaLine(documentPayload.frontmatter);
+    updateSummary(documentPayload.frontmatter);
     setStatus("saved");
-    await refreshList();
     return true;
-  } catch {
+  } catch (error) {
+    const { text, issues } = describeError(error);
+    settingsErrors.textContent =
+      issues.length > 0
+        ? issues.map((issue) => `${issue.field}: ${issue.message}`).join("；")
+        : text;
     setStatus("error");
-    settingsErrors.textContent = "save: 无法连接本地写作服务";
     return false;
+  } finally {
+    saving = false;
   }
 }
 
@@ -266,6 +345,9 @@ function markDirty() {
   }
   dirty = true;
   setStatus("dirty");
+  if (!backend?.autosave) {
+    return;
+  }
   if (saveTimer) {
     clearTimeout(saveTimer);
   }
@@ -274,32 +356,17 @@ function markDirty() {
   }, AUTOSAVE_DELAY);
 }
 
-function toBase64(bytes: Uint8Array): string {
-  let binary = "";
-  const chunkSize = 0x8000;
-  for (let index = 0; index < bytes.length; index += chunkSize) {
-    binary += String.fromCharCode(...bytes.subarray(index, index + chunkSize));
-  }
-  return btoa(binary);
-}
-
 async function uploadImage(file: File): Promise<string> {
+  if (!backend) {
+    throw new Error("后端未就绪");
+  }
   const safeName = (file.name || "image.png")
     .toLowerCase()
     .replace(/[^a-z0-9._-]+/g, "-")
     .replace(/^[-.]+|[-.]+$/g, "");
   const name = `${Date.now()}-${safeName || "image.png"}`;
   const bytes = new Uint8Array(await file.arrayBuffer());
-  const response = await fetch(`${API}/assets`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, dataBase64: toBase64(bytes) }),
-  });
-  if (!response.ok) {
-    throw new Error("上传失败");
-  }
-  const data = (await response.json()) as { url: string };
-  return data.url;
+  return backend.uploadAsset(name, bytes);
 }
 
 async function mountEditor(markdown: string) {
@@ -333,39 +400,43 @@ async function mountEditor(markdown: string) {
 }
 
 async function openPost(slug: string) {
+  if (!backend) {
+    return;
+  }
   if (dirty) {
     const saved = await saveNow();
     if (!saved) {
       return;
     }
   }
-  const response = await fetch(`${API}/posts/${slug}`);
-  if (!response.ok) {
+  let post: PostDocumentPayload;
+  try {
+    post = await backend.load(slug);
+  } catch (error) {
+    settingsErrors.textContent = describeError(error).text;
+    setStatus("error");
     return;
   }
-  const data = (await response.json()) as { post: PostDocumentPayload };
-  current = { slug, frontmatter: data.post.frontmatter };
+  current = { slug, frontmatter: post.frontmatter };
   dirty = false;
 
   workspaceEmpty.hidden = true;
   sheet.hidden = false;
   docCrumb.textContent = `写作台 / ${slug}.md`;
-  docTitle.value = data.post.frontmatter.title;
-  renderState(data.post.frontmatter);
-  renderMetaLine(data.post.frontmatter);
-  renderSettings(data.post.frontmatter);
+  docTitle.value = post.frontmatter.title;
+  renderState(post.frontmatter);
+  renderMetaLine(post.frontmatter);
+  renderSettings(post.frontmatter);
   renderLibrary();
   setStatus("idle");
-  await mountEditor(data.post.body);
+  await mountEditor(post.body);
 }
 
 async function refreshList() {
-  const response = await fetch(`${API}/posts`);
-  if (!response.ok) {
-    throw new Error(`list failed: ${response.status}`);
+  if (!backend) {
+    return;
   }
-  const data = (await response.json()) as { posts: PostSummary[] };
-  posts = data.posts;
+  posts = await backend.list();
   renderLibrary();
 }
 
@@ -378,6 +449,9 @@ function todayISO(): string {
 
 async function createPost(event: SubmitEvent) {
   event.preventDefault();
+  if (!backend) {
+    return;
+  }
   const title = npTitle.value.trim();
   const slug = npSlug.value.trim();
   const tags = selectedTags(npTags);
@@ -407,25 +481,217 @@ async function createPost(event: SubmitEvent) {
     },
     body: "",
   };
-  const response = await fetch(`${API}/posts`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-  if (!response.ok) {
-    const data = (await response.json()) as {
-      errors?: { field: string; message: string }[];
-      error?: string;
-    };
+  try {
+    await backend.create(payload);
+  } catch (error) {
+    const { text, issues } = describeError(error);
     npError.textContent =
-      data.errors?.map((issue) => issue.message).join("；") ??
-      data.error ??
-      "创建失败";
+      issues.length > 0
+        ? issues.map((issue) => issue.message).join("；")
+        : text;
     return;
   }
   dialog.close();
-  await refreshList();
+  updateSummary(payload.frontmatter);
   await openPost(slug);
+}
+
+/* ---------- Backends ---------- */
+
+async function parseLocalError(response: Response): Promise<BackendError> {
+  const data = (await response.json().catch(() => ({}))) as {
+    errors?: ValidationIssue[];
+    error?: string;
+  };
+  return new BackendError(data.error ?? "保存失败", data.errors ?? []);
+}
+
+function createLocalBackend(): WriteBackend {
+  return {
+    label: "本地",
+    autosave: true,
+    canLogout: false,
+    async list() {
+      const response = await fetch(`${LOCAL_API}/posts`);
+      if (!response.ok) {
+        throw new BackendError("无法连接本地写作服务");
+      }
+      const data = (await response.json()) as { posts: PostSummary[] };
+      return data.posts;
+    },
+    async load(slug) {
+      const response = await fetch(`${LOCAL_API}/posts/${slug}`);
+      if (!response.ok) {
+        throw await parseLocalError(response);
+      }
+      const data = (await response.json()) as { post: PostDocumentPayload };
+      return data.post;
+    },
+    async save(slug, documentPayload) {
+      const response = await fetch(`${LOCAL_API}/posts/${slug}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(documentPayload),
+      });
+      if (!response.ok) {
+        throw await parseLocalError(response);
+      }
+    },
+    async create(documentPayload) {
+      const response = await fetch(`${LOCAL_API}/posts`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(documentPayload),
+      });
+      if (!response.ok) {
+        throw await parseLocalError(response);
+      }
+    },
+    async uploadAsset(name, bytes) {
+      const response = await fetch(`${LOCAL_API}/assets`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          dataBase64: btoa(
+            Array.from(bytes, (byte) => String.fromCharCode(byte)).join(""),
+          ),
+        }),
+      });
+      if (!response.ok) {
+        throw await parseLocalError(response);
+      }
+      const data = (await response.json()) as { url: string };
+      return data.url;
+    },
+  };
+}
+
+function githubConfig() {
+  const apiBase =
+    localStorage.getItem(API_BASE_OVERRIDE_KEY) ??
+    DEFAULT_GITHUB_WRITE_CONFIG.apiBase;
+  return { ...DEFAULT_GITHUB_WRITE_CONFIG, apiBase };
+}
+
+function createGithubBackend(client: GithubWriteClient): WriteBackend {
+  const config = githubConfig();
+  const postPath = (slug: string) => `${config.blogDir}/${slug}.md`;
+  const validateOrThrow = (documentPayload: PostDocumentPayload) => {
+    const issues = validatePost(documentPayload);
+    if (issues.length > 0) {
+      throw new BackendError("校验失败", issues);
+    }
+  };
+
+  return {
+    label: "GitHub",
+    autosave: false,
+    canLogout: true,
+    async list() {
+      return summarizePosts(await client.listMarkdownFiles());
+    },
+    async load(slug) {
+      return parsePostFile(await client.loadFile(postPath(slug)));
+    },
+    async save(slug, documentPayload) {
+      validateOrThrow(documentPayload);
+      await client.saveFile(
+        postPath(slug),
+        serializePostFile(documentPayload),
+        `content: update ${slug}`,
+      );
+    },
+    async create(documentPayload) {
+      validateOrThrow(documentPayload);
+      const slug = documentPayload.frontmatter.slug;
+      await client.createFile(
+        postPath(slug),
+        serializePostFile(documentPayload),
+        `content: create ${slug}`,
+      );
+    },
+    async uploadAsset(name, bytes) {
+      await client.uploadBinary(
+        `${config.uploadsDir}/${name}`,
+        bytes,
+        `content: upload ${name}`,
+      );
+      const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+      return `${base}/uploads/${name}`;
+    },
+  };
+}
+
+/* ---------- Boot gate ---------- */
+
+function showGate(mode: "boot" | "login", message = "") {
+  gate.classList.add("visible");
+  gateBoot.hidden = mode !== "boot";
+  gateLogin.hidden = mode !== "login";
+  gateError.textContent = message;
+}
+
+function hideGate() {
+  gate.classList.remove("visible");
+}
+
+async function localApiAvailable(): Promise<boolean> {
+  try {
+    const response = await fetch(`${LOCAL_API}/posts`, { method: "GET" });
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
+async function startWithBackend(nextBackend: WriteBackend) {
+  backend = nextBackend;
+  backendBadge.textContent = nextBackend.label;
+  logoutButton.hidden = !nextBackend.canLogout;
+  el<HTMLElement>("library-foot").textContent = nextBackend.autosave
+    ? "本地模式 · 保存即写入 src/data/blog"
+    : "GitHub 模式 · 保存即提交到 main 并触发部署";
+  hideGate();
+  await refreshList();
+  if (posts.length > 0 && posts[0]) {
+    await openPost(posts[0].slug);
+  } else {
+    workspaceEmpty.hidden = false;
+    sheet.hidden = true;
+  }
+}
+
+async function connectGithub(token: string): Promise<void> {
+  const client = createGithubWriteClient(
+    (input, init) => fetch(input, init),
+    githubConfig(),
+    token,
+  );
+  await client.verifyAccess();
+  localStorage.setItem(TOKEN_STORAGE_KEY, token);
+  await startWithBackend(createGithubBackend(client));
+}
+
+async function boot() {
+  showGate("boot");
+  const forced = localStorage.getItem(BACKEND_OVERRIDE_KEY);
+  if (forced !== "github" && (await localApiAvailable())) {
+    await startWithBackend(createLocalBackend());
+    return;
+  }
+
+  const storedToken = localStorage.getItem(TOKEN_STORAGE_KEY);
+  if (storedToken) {
+    try {
+      await connectGithub(storedToken);
+      return;
+    } catch (error) {
+      showGate("login", describeError(error).text);
+      return;
+    }
+  }
+  showGate("login");
 }
 
 function bindEvents() {
@@ -456,6 +722,14 @@ function bindEvents() {
     settings.classList.add("open");
   });
 
+  saveButton.addEventListener("click", () => {
+    void saveNow();
+  });
+  logoutButton.addEventListener("click", () => {
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+    location.reload();
+  });
+
   el<HTMLButtonElement>("new-post-button").addEventListener("click", () => {
     npForm.reset();
     npError.textContent = "";
@@ -478,6 +752,29 @@ function bindEvents() {
     void createPost(event);
   });
 
+  gateSubmit.addEventListener("click", () => {
+    const token = gateToken.value.trim();
+    if (!token) {
+      gateError.textContent = "请输入 GitHub Token";
+      return;
+    }
+    gateSubmit.disabled = true;
+    gateError.textContent = "";
+    connectGithub(token)
+      .catch((error: unknown) => {
+        gateError.textContent = describeError(error).text;
+      })
+      .finally(() => {
+        gateSubmit.disabled = false;
+      });
+  });
+  gateToken.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      gateSubmit.click();
+    }
+  });
+
   window.addEventListener("keydown", (event) => {
     if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s") {
       event.preventDefault();
@@ -495,20 +792,5 @@ function bindEvents() {
   });
 }
 
-async function start() {
-  bindEvents();
-  try {
-    await refreshList();
-  } catch {
-    localOnly.classList.add("visible");
-    return;
-  }
-  if (posts.length > 0 && posts[0]) {
-    await openPost(posts[0].slug);
-  } else {
-    workspaceEmpty.hidden = false;
-    sheet.hidden = true;
-  }
-}
-
-void start();
+bindEvents();
+void boot();

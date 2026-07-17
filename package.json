@@ -13,7 +13,7 @@
     "test": "pnpm test:unit && pnpm test:site && pnpm test:github",
     "test:github": "CMS_AUTH_URL=https://cms-auth.example.workers.dev GITHUB_ACTIONS=true astro build && vitest run tests/github-output.test.ts",
     "test:site": "pnpm build && vitest run tests/site-output.test.ts",
-    "test:unit": "vitest run tests/cms-auth.test.ts tests/cms-config.test.ts tests/content-schema.test.ts tests/deploy-workflow.test.ts tests/posts.test.ts tests/topics.test.ts tests/urls.test.ts tests/write-store.test.ts tests/write-api.test.ts"
+    "test:unit": "vitest run tests/cms-auth.test.ts tests/cms-config.test.ts tests/content-schema.test.ts tests/deploy-workflow.test.ts tests/posts.test.ts tests/topics.test.ts tests/urls.test.ts tests/write-store.test.ts tests/write-api.test.ts tests/write-github.test.ts"
   },
   "dependencies": {
     "@astrojs/rss": "^4.0.19",
