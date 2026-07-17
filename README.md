@@ -26,7 +26,19 @@ pnpm build         # 生成 dist 静态站点
 
 ## 写文章
 
-在 `src/data/blog` 新建 Markdown 文件：
+推荐方式：本地写作台。运行 `pnpm dev` 后访问
+`http://localhost:4321/write/`，获得 Typora 式的所见即所得写作体验：
+
+- 左侧文章库支持筛选、新建草稿，正文区输入 Markdown 语法实时渲染，`/` 唤起插入菜单；
+- 元信息（摘要、发布日期、专题、草稿/发布、首页推荐）在右侧「文章设置」抽屉中编辑；
+- 停止输入约 1.6 秒自动保存，`⌘S` 立即保存，保存即写入 `src/data/blog/<slug>.md`，格式与手写文件完全一致；
+- 保存前经过与构建相同的 schema 校验（slug 规则、专题目录、featured 必填 visualAlt），坏数据无法落盘；
+- 粘贴或上传图片会保存到 `public/uploads/`。
+
+写作台由 `src/integrations/write-dev-api.ts` 提供本地文件 API，仅在
+`pnpm dev` 下可用；线上发布链路仍使用 `/admin/`（见「在线写作」）。
+
+也可以直接在 `src/data/blog` 新建 Markdown 文件：
 
 ```yaml
 ---

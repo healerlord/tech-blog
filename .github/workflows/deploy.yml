@@ -23,8 +23,7 @@ jobs:
       - name: Verify CMS auth configuration
         run: |
           if [ -z "$CMS_AUTH_URL" ]; then
-            echo "::error::Set the CMS_AUTH_URL repository variable before deploying."
-            exit 1
+            echo "::warning::CMS_AUTH_URL is not set; the admin falls back to GitHub token login until the OAuth Worker is configured."
           fi
       - name: Checkout repository
         uses: actions/checkout@v7

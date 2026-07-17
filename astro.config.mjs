@@ -1,6 +1,8 @@
 import sitemap from "@astrojs/sitemap";
 import { defineConfig } from "astro/config";
 
+import { writeDevApi } from "./src/integrations/write-dev-api";
+
 const isGitHubActions = process.env.GITHUB_ACTIONS === "true";
 const site =
   process.env.SITE_URL ??
@@ -12,7 +14,12 @@ export default defineConfig({
   output: "static",
   site,
   base,
-  integrations: [sitemap()],
+  integrations: [
+    sitemap({
+      filter: (page) => !page.includes("/admin/") && !page.includes("/write/"),
+    }),
+    writeDevApi(),
+  ],
   // The self-contained CMS is isolated to /admin and is about 600 KB over gzip.
   vite: { build: { chunkSizeWarningLimit: 2000 } },
 });

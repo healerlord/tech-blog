@@ -3,7 +3,7 @@ title: "别让向量数据库替你做产品决策"
 slug: "vector-database-decisions"
 description: "召回率不是产品价值，向量检索也无法替代对问题边界的定义。"
 publishedAt: 2026-06-28
-tags: ["RAG", "AI"]
+tags: ["AI", "RAG"]
 featured: false
 draft: false
 visualAlt: "同一问题经过关键词、向量和混合召回后得到不同候选集合的对比图。"

@@ -42,6 +42,19 @@ describe("production site", () => {
     expect(javaTopic).toContain("JVM、Spring 与服务端工程边界");
   });
 
+  it("builds a bundled no-index writing studio kept out of the sitemap", async () => {
+    const html = await readFile("dist/write/index.html", "utf8");
+    const sitemap = await readFile("dist/sitemap-0.xml", "utf8");
+
+    expect(html).toContain('content="noindex, nofollow"');
+    expect(html).toContain("Content-Security-Policy");
+    expect(html).toContain("写作台");
+    expect(html).toContain("新建文章");
+    expect(html).not.toContain("unpkg.com");
+    expect(sitemap).not.toContain("/write/");
+    expect(sitemap).not.toContain("/admin/");
+  });
+
   it("builds a bundled no-index writing admin", async () => {
     const html = await readFile("dist/admin/index.html", "utf8");
     const config = await readFile("dist/admin/config.yml", "utf8");
