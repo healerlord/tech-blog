@@ -12,7 +12,11 @@ export const GET: APIRoute = ({ site }) => {
   const authUrl = process.env.CMS_AUTH_URL?.trim();
 
   if (process.env.GITHUB_ACTIONS === "true" && !authUrl) {
-    throw new Error("CMS_AUTH_URL is required for a GitHub Pages build");
+    // Until the OAuth Worker is deployed the admin falls back to GitHub
+    // token login; the deploy workflow surfaces a matching warning.
+    console.warn(
+      "CMS_AUTH_URL is not set; building the admin with token login only.",
+    );
   }
 
   const siteUrl = new URL(joinBase(import.meta.env.BASE_URL, ""), site).toString();
